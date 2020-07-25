@@ -102,8 +102,8 @@ COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 REFS_THAT_ALIAS_TO_OTHER_REFS = {
-    'refs/remotes/origin/lkgr': 'refs/remotes/origin/master',
-    'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
+    'refs/remotes/origin/lkgr': 'refs/remotes/origin/main',
+    'refs/remotes/origin/lkcr': 'refs/remotes/origin/main',
 }
 
 # Valid extensions for files we want to lint.
@@ -113,8 +113,8 @@ DEFAULT_LINT_IGNORE_REGEX = r"$^"
 # File name for yapf style config files.
 YAPF_CONFIG_FILENAME = '.style.yapf'
 
-# Buildbucket master name prefix.
-MASTER_PREFIX = 'master.'
+# Buildbucket main name prefix.
+MASTER_PREFIX = 'main.'
 
 # Shortcut since it quickly becomes redundant.
 Fore = colorama.Fore
@@ -347,25 +347,25 @@ def _get_properties_from_options(options):
   return properties
 
 
-def _prefix_master(master):
-  """Convert user-specified master name to full master name.
+def _prefix_main(main):
+  """Convert user-specified main name to full main name.
 
-  Buildbucket uses full master name(master.tryserver.chromium.linux) as bucket
-  name, while the developers always use shortened master name
-  (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
+  Buildbucket uses full main name(main.tryserver.chromium.linux) as bucket
+  name, while the developers always use shortened main name
+  (tryserver.chromium.linux) by stripping off the prefix 'main.'. This
   function does the conversion for buildbucket migration.
   """
-  if master.startswith(MASTER_PREFIX):
-    return master
-  return '%s%s' % (MASTER_PREFIX, master)
+  if main.startswith(MASTER_PREFIX):
+    return main
+  return '%s%s' % (MASTER_PREFIX, main)
 
 
-def _unprefix_master(bucket):
-  """Convert bucket name to shortened master name.
+def _unprefix_main(bucket):
+  """Convert bucket name to shortened main name.
 
-  Buildbucket uses full master name(master.tryserver.chromium.linux) as bucket
-  name, while the developers always use shortened master name
-  (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
+  Buildbucket uses full main name(main.tryserver.chromium.linux) as bucket
+  name, while the developers always use shortened main name
+  (tryserver.chromium.linux) by stripping off the prefix 'main.'. This
   function does the conversion for buildbucket migration.
   """
   if bucket.startswith(MASTER_PREFIX):
@@ -416,12 +416,12 @@ def _get_bucket_map(changelist, options, option_parser):
   for triggering try jobs.
   """
   # If no bots are listed, we try to get a set of builders and tests based
-  # on GetPreferredTryMasters functions in PRESUBMIT.py files.
+  # on GetPreferredTryMains functions in PRESUBMIT.py files.
   if not options.bot:
     change = changelist.GetChange(
         changelist.GetCommonAncestorWithUpstream(), None)
-    # Get try masters from PRESUBMIT.py files.
-    masters = presubmit_support.DoGetTryMasters(
+    # Get try mains from PRESUBMIT.py files.
+    mains = presubmit_support.DoGetTryMains(
         change=change,
         changed_files=change.LocalPaths(),
         repository_root=settings.GetRoot(),
@@ -429,22 +429,22 @@ def _get_bucket_map(changelist, options, option_parser):
         project=None,
         verbose=options.verbose,
         output_stream=sys.stdout)
-    if masters is None:
+    if mains is None:
       return None
-    return {_prefix_master(m): b for m, b in masters.iteritems()}
+    return {_prefix_main(m): b for m, b in mains.iteritems()}
 
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
-  if options.master:
-    return {_prefix_master(options.master): {b: [] for b in options.bot}}
+  if options.main:
+    return {_prefix_main(options.main): {b: [] for b in options.bot}}
 
-  # If bots are listed but no master or bucket, then we need to find out
-  # the corresponding master for each bot.
+  # If bots are listed but no main or bucket, then we need to find out
+  # the corresponding main for each bot.
   bucket_map, error_message = _get_bucket_map_for_builders(options.bot)
   if error_message:
     option_parser.error(
-        'Tryserver master cannot be found because: %s\n'
-        'Please manually specify the tryserver master, e.g. '
+        'Tryserver main cannot be found because: %s\n'
+        'Please manually specify the tryserver main, e.g. '
         '"-m tryserver.chromium.linux".' % error_message)
   return bucket_map
 
@@ -455,12 +455,12 @@ def _get_bucket_map_for_builders(builders):
   try:
     builders_map = json.load(urllib2.urlopen(map_url))
   except urllib2.URLError as e:
-    return None, ('Failed to fetch builder-to-master map from %s. Error: %s.' %
+    return None, ('Failed to fetch builder-to-main map from %s. Error: %s.' %
                   (map_url, e))
   except ValueError as e:
     return None, ('Invalid json string from %s. Error: %s.' % (map_url, e))
   if not builders_map:
-    return None, 'Failed to build master map.'
+    return None, 'Failed to build main map.'
 
   bucket_map = {}
   for builder in builders:
@@ -513,9 +513,9 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
   print_text.append('Tried jobs on:')
   for bucket, builders_and_tests in sorted(buckets.iteritems()):
     print_text.append('Bucket: %s' % bucket)
-    master = None
+    main = None
     if bucket.startswith(MASTER_PREFIX):
-      master = _unprefix_master(bucket)
+      main = _unprefix_main(bucket)
     for builder, tests in sorted(builders_and_tests.iteritems()):
       print_text.append('  %s: %s' % (builder, tests))
       parameters = {
@@ -536,9 +536,9 @@ def _trigger_try_jobs(auth_config, changelist, buckets, options, patchset):
           'buildset:%s' % buildset,
           'user_agent:git_cl_try',
       ]
-      if master:
-        parameters['properties']['master'] = master
-        tags.append('master:%s' % master)
+      if main:
+        parameters['properties']['main'] = main
+        tags.append('main:%s' % main)
 
       batch_req_body['builds'].append(
           {
@@ -634,11 +634,11 @@ def print_try_jobs(options, builds):
 
   def get_bucket(b):
     bucket = b['bucket']
-    if bucket.startswith('master.'):
-      return bucket[len('master.'):]
+    if bucket.startswith('main.'):
+      return bucket[len('main.'):]
     return bucket
 
-  if options.print_master:
+  if options.print_main:
     name_fmt = '%%-%ds %%-%ds' % (
         max(len(str(get_bucket(b))) for b in builds.itervalues()),
         max(len(str(get_builder(b))) for b in builds.itervalues()))
@@ -686,7 +686,7 @@ def print_try_jobs(options, builds):
       f=lambda b: (get_name(b),))
   pop(status='COMPLETED', result='FAILURE',
       failure_reason='INVALID_BUILD_DEFINITION',
-      title='Wrong master/builder name:', color=Fore.MAGENTA,
+      title='Wrong main/builder name:', color=Fore.MAGENTA,
       f=lambda b: (get_name(b),))
   pop(status='COMPLETED', result='FAILURE',
       title='Other failures:',
@@ -1000,7 +1000,7 @@ def ShortBranchName(branch):
 
 
 def GetCurrentBranchRef():
-  """Returns branch ref (e.g., refs/heads/master) or None."""
+  """Returns branch ref (e.g., refs/heads/main) or None."""
   return RunGit(['symbolic-ref', 'HEAD'],
                 stderr=subprocess2.VOID, error_ok=True).strip() or None
 
@@ -1204,7 +1204,7 @@ class Changelist(object):
     self.more_cc.extend(more_cc)
 
   def GetBranch(self):
-    """Returns the short branch name, e.g. 'master'."""
+    """Returns the short branch name, e.g. 'main'."""
     if not self.branch:
       branchref = GetCurrentBranchRef()
       if not branchref:
@@ -1214,7 +1214,7 @@ class Changelist(object):
     return self.branch
 
   def GetBranchRef(self):
-    """Returns the full branch name, e.g. 'refs/heads/master'."""
+    """Returns the full branch name, e.g. 'refs/heads/main'."""
     self.GetBranch()  # Poke the lazy loader.
     return self.branchref
 
@@ -1240,7 +1240,7 @@ class Changelist(object):
   @staticmethod
   def FetchUpstreamTuple(branch):
     """Returns a tuple containing remote and remote ref,
-       e.g. 'origin', 'refs/heads/master'
+       e.g. 'origin', 'refs/heads/main'
     """
     remote = '.'
     upstream_branch = _git_get_branch_config_value('merge', branch=branch)
@@ -1255,15 +1255,15 @@ class Changelist(object):
       else:
         # Else, try to guess the origin remote.
         remote_branches = RunGit(['branch', '-r']).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
+        if 'origin/main' in remote_branches:
+          # Fall back on origin/main if it exits.
           remote = 'origin'
-          upstream_branch = 'refs/heads/master'
+          upstream_branch = 'refs/heads/main'
         else:
           DieWithError(
              'Unable to determine default branch to diff against.\n'
              'Either pass complete "git diff"-style arguments, like\n'
-             '  git cl upload origin/master\n'
+             '  git cl upload origin/main\n'
              'or verify this branch is set up to track another \n'
              '(via the --track argument to "git checkout -b ...").')
 
@@ -1528,8 +1528,8 @@ class Changelist(object):
           ('\nFailed to diff against upstream branch %s\n\n'
            'This branch probably doesn\'t exist anymore. To reset the\n'
            'tracking branch, please run\n'
-           '    git branch --set-upstream-to origin/master %s\n'
-           'or replace origin/master with the relevant branch') %
+           '    git branch --set-upstream-to origin/main %s\n'
+           'or replace origin/main with the relevant branch') %
           (upstream_branch, self.GetBranch()))
 
     issue = self.GetIssue()
@@ -2968,7 +2968,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # squashed version.
     upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
 
-    if upstream_branch_name == 'master':
+    if upstream_branch_name == 'main':
       return self.GetCommonAncestorWithUpstream()
 
     # Check the squashed hash of the parent.
@@ -4658,7 +4658,7 @@ def GetTargetRef(remote, remote_branch, target_branch):
   # Create the true path to the remote branch.
   # Does the following translation:
   # * refs/remotes/origin/refs/diff/test -> refs/diff/test
-  # * refs/remotes/origin/master -> refs/heads/master
+  # * refs/remotes/origin/main -> refs/heads/main
   # * refs/remotes/branch-heads/test -> refs/branch-heads/test
   if remote_branch.startswith('refs/remotes/%s/refs/' % remote):
     remote_branch = remote_branch.replace('refs/remotes/%s/' % remote, '')
@@ -4738,7 +4738,7 @@ def CMDupload(parser, args):
                     '--target-branch',
                     metavar='TARGET',
                     help='Apply CL to remote ref TARGET.  ' +
-                         'Default: remote branch head, or master')
+                         'Default: remote branch head, or main')
   parser.add_option('--squash', action='store_true',
                     help='Squash multiple commits into one')
   parser.add_option('--no-squash', action='store_true',
@@ -5075,13 +5075,13 @@ def CMDtry(parser, args):
       '-B', '--bucket', default='',
       help=('Buildbucket bucket to send the try requests.'))
   group.add_option(
-      '-m', '--master', default='',
-      help=('DEPRECATED, use -B. The try master where to run the builds.'))
+      '-m', '--main', default='',
+      help=('DEPRECATED, use -B. The try main where to run the builds.'))
   group.add_option(
       '-r', '--revision',
       help='Revision to use for the try job; default: the revision will '
            'be determined by the try recipe that builder runs, which usually '
-           'defaults to HEAD of origin/master')
+           'defaults to HEAD of origin/main')
   group.add_option(
       '-c', '--clobber', action='store_true', default=False,
       help='Force a clobber before building; that is don\'t do an '
@@ -5110,9 +5110,9 @@ def CMDtry(parser, args):
   _process_codereview_issue_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  if options.master and options.master.startswith('luci.'):
+  if options.main and options.main.startswith('luci.'):
     parser.error(
-        '-m option does not support LUCI. Please pass -B %s' % options.master)
+        '-m option does not support LUCI. Please pass -B %s' % options.main)
   # Make sure that all properties are prop=value pairs.
   bad_params = [x for x in options.properties if '=' not in x]
   if bad_params:
@@ -5134,8 +5134,8 @@ def CMDtry(parser, args):
   if error_message:
     parser.error('Can\'t trigger try jobs: %s' % error_message)
 
-  if options.bucket and options.master:
-    parser.error('Only one of --bucket and --master may be used.')
+  if options.bucket and options.main:
+    parser.error('Only one of --bucket and --main may be used.')
 
   buckets = _get_bucket_map(cl, options, parser)
 
@@ -5171,7 +5171,7 @@ def CMDtry_results(parser, args):
   group.add_option(
       '-p', '--patchset', type=int, help='patchset number if not current.')
   group.add_option(
-      '--print-master', action='store_true', help='print master name as well.')
+      '--print-main', action='store_true', help='print main name as well.')
   group.add_option(
       '--color', action='store_true', default=setup_color.IS_TTY,
       help='force color output, useful when piping output.')

@@ -596,7 +596,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'sync', '-v', '-v', '-v',
         '--revision', 'src/repo2@%s' % self.githash('repo_2', 1),
         '--patch-ref',
-        '%srepo_2@refs/heads/master:%s' % (
+        '%srepo_2@refs/heads/main:%s' % (
             self.git_base, self.githash('repo_2', 2)),
     ])
     # Assert that repo_2 files coincide with revision @2 (the patch ref)
@@ -620,7 +620,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         'sync', '-v', '-v', '-v',
         '--revision', 'src/repo2@%s' % self.githash('repo_2', 1),
         '--patch-ref',
-        '%srepo_2@refs/heads/master:%s' % (
+        '%srepo_2@refs/heads/main:%s' % (
             self.git_base, self.githash('repo_2', 2)),
         '--nohooks',
     ])

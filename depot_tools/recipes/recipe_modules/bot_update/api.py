@@ -169,7 +169,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       # definition says "The Gitiles commit to run against.".
       # However, here we ignore it if the config specified a revision.
       # This is necessary because existing builders rely on this behavior,
-      # e.g. they want to force refs/heads/master at the config level.
+      # e.g. they want to force refs/heads/main at the config level.
       main_repo_path = self._get_commit_repo_path(in_commit, cfg)
       revisions[main_repo_path] = revisions.get(main_repo_path) or in_commit_rev
 
@@ -324,8 +324,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
             # ref.
             out_commit.ref = in_rev
           elif in_rev == 'HEAD':
-            # bot_update.py interprets HEAD as refs/heads/master
-            out_commit.ref = 'refs/heads/master'
+            # bot_update.py interprets HEAD as refs/heads/main
+            out_commit.ref = 'refs/heads/main'
           elif out_commit.id == in_commit.id and in_commit.ref:
             # Derive output ref from the input ref.
             out_commit.ref = in_commit.ref
@@ -378,7 +378,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     If there's no Gerrit CL associated with the run, returns 'HEAD'.
     Otherwise this queries Gerrit for the correct destination ref, which
-    might differ from refs/heads/master.
+    might differ from refs/heads/main.
 
     Args:
       cfg: The used gclient config.
@@ -387,7 +387,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
           the CL's project.
     Returns:
         A destination ref as understood by bot_update.py if available
-        and if different from refs/heads/master, returns 'HEAD' otherwise.
+        and if different from refs/heads/main, returns 'HEAD' otherwise.
     """
     # Ignore project paths other than the one belonging to the current CL.
     patch_path = self.m.gclient.get_gerrit_patch_root(gclient_config=cfg)
@@ -397,7 +397,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       return 'HEAD'
 
     target_ref = self.m.tryserver.gerrit_change_target_ref
-    if target_ref == 'refs/heads/master':
+    if target_ref == 'refs/heads/main':
       return 'HEAD'
 
     return target_ref

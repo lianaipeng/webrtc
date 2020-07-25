@@ -365,7 +365,7 @@ def gclient_sync(
     args += ['--disable-syntax-validation']
   for name, revision in sorted(revisions.iteritems()):
     if revision.upper() == 'HEAD':
-      revision = 'origin/master'
+      revision = 'origin/main'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
   if patch_refs:
@@ -543,14 +543,14 @@ def _get_target_branch_and_revision(solution_name, git_url, revisions):
   elif git_url in revisions:
     configured = revisions[git_url]
   else:
-    return 'master', 'HEAD'
+    return 'main', 'HEAD'
 
   parts = configured.split(':', 1)
   if len(parts) == 2:
     # Support for "branch:revision" syntax.
     return parts
   if COMMIT_HASH_RE.match(configured):
-    return 'master', configured
+    return 'main', configured
   return configured, 'HEAD'
 
 
@@ -573,7 +573,7 @@ def force_solution_revision(solution_name, git_url, revisions, cwd):
     # destination branch would be e.g. refs/branch-heads/123. But here
     # we need to pass refs/remotes/branch-heads/123 to check out.
     # This will also not work if somebody passes a local refspec like
-    # refs/heads/master. It needs to translate to refs/remotes/origin/master
+    # refs/heads/main. It needs to translate to refs/remotes/origin/main
     # first. See also https://crbug.com/740456 .
     if branch.startswith(('refs/', 'origin/')):
       treeish = branch

@@ -174,18 +174,18 @@ class GIT(object):
 
   @staticmethod
   def GetBranchRef(cwd):
-    """Returns the full branch reference, e.g. 'refs/heads/master'."""
+    """Returns the full branch reference, e.g. 'refs/heads/main'."""
     return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
 
   @staticmethod
   def GetBranch(cwd):
-    """Returns the short branch name, e.g. 'master'."""
+    """Returns the short branch name, e.g. 'main'."""
     return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
 
   @staticmethod
   def FetchUpstreamTuple(cwd):
     """Returns a tuple containg remote and remote ref,
-       e.g. 'origin', 'refs/heads/master'
+       e.g. 'origin', 'refs/heads/main'
     """
     remote = '.'
     branch = GIT.GetBranch(cwd)
@@ -215,10 +215,10 @@ class GIT(object):
       else:
         # Else, try to guess the origin remote.
         remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
+        if 'origin/main' in remote_branches:
+          # Fall back on origin/main if it exits.
           remote = 'origin'
-          upstream_branch = 'refs/heads/master'
+          upstream_branch = 'refs/heads/main'
         else:
           # Give up.
           remote = None

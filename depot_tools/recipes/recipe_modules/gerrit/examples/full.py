@@ -18,7 +18,7 @@ def RunSteps(api):
   data = api.gerrit.create_gerrit_branch(host, project, branch, commit)
   assert data == 'refs/heads/test'
 
-  data = api.gerrit.get_gerrit_branch(host, project, 'master')
+  data = api.gerrit.get_gerrit_branch(host, project, 'main')
   assert data == '67ebf73496383c6777035e374d2d664009e2aa5c'
 
   # Query for changes in Chromium's CQ.
@@ -63,7 +63,7 @@ def GenTests(api):
           api.gerrit.make_gerrit_create_branch_response_data()
       )
       + api.step_data(
-          'gerrit get_gerrit_branch (v8/v8 master)',
+          'gerrit get_gerrit_branch (v8/v8 main)',
           api.gerrit.make_gerrit_get_branch_response_data()
       )
       + api.step_data(

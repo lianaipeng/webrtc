@@ -264,7 +264,7 @@ class GitWrapper(SCMWrapper):
   def diff(self, options, _args, _file_list):
     _, revision = gclient_utils.SplitUrlRevision(self.url)
     if not revision:
-      revision = 'refs/remotes/%s/master' % self.remote
+      revision = 'refs/remotes/%s/main' % self.remote
     self._Run(['-c', 'core.quotePath=false', 'diff', revision], options)
 
   def pack(self, _options, _args, _file_list):
@@ -357,7 +357,7 @@ class GitWrapper(SCMWrapper):
 
     The patch ref is given by |patch_repo|@|patch_rev|.
     |target_rev| is usually the branch that the |patch_rev| was uploaded against
-    (e.g. 'refs/heads/master'), but this is not required.
+    (e.g. 'refs/heads/main'), but this is not required.
 
     We cherry-pick all commits reachable from |patch_rev| on top of the curret
     HEAD, excluding those reachable from |target_rev|
@@ -383,7 +383,7 @@ class GitWrapper(SCMWrapper):
           e.g. 'refs/changes/1234/34/1'.
       target_rev: The revision to use when finding the merge base.
           Typically, the branch that the patch was uploaded against.
-          e.g. 'refs/heads/master' or 'refs/heads/infra/config'.
+          e.g. 'refs/heads/main' or 'refs/heads/infra/config'.
       options: The options passed to gclient.
       file_list: A list where modified files will be appended.
     """
@@ -479,7 +479,7 @@ class GitWrapper(SCMWrapper):
     self._CheckMinVersion("1.6.6")
 
     # If a dependency is not pinned, track the default remote branch.
-    default_rev = 'refs/remotes/%s/master' % self.remote
+    default_rev = 'refs/remotes/%s/main' % self.remote
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     revision = deps_revision
     managed = True
@@ -633,9 +633,9 @@ class GitWrapper(SCMWrapper):
     #      - checkout new branch
     #   c) otherwise exit
 
-    # GetUpstreamBranch returns something like 'refs/remotes/origin/master' for
+    # GetUpstreamBranch returns something like 'refs/remotes/origin/main' for
     # a tracking branch
-    # or 'master' if not a tracking branch (it's based on a specific rev/hash)
+    # or 'main' if not a tracking branch (it's based on a specific rev/hash)
     # or it returns None if it couldn't find an upstream
     if cur_branch is None:
       upstream_branch = None
@@ -864,7 +864,7 @@ class GitWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    default_rev = "refs/heads/master"
+    default_rev = "refs/heads/main"
     if options.upstream:
       if self._GetCurrentBranch():
         upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)

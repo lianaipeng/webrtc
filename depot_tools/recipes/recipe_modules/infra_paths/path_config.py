@@ -15,12 +15,12 @@ def infra_buildbot(c):
   """Used on BuildBot by "annotated_run"."""
   c.base_paths['root'] = c.START_DIR[:-4]
   c.base_paths['cache'] = c.base_paths['root'] + (
-      'build', 'slave', 'cache')
+      'build', 'subordinate', 'cache')
   c.base_paths['git_cache'] = c.base_paths['root'] + (
-      'build', 'slave', 'cache_dir')
+      'build', 'subordinate', 'cache_dir')
   c.base_paths['cleanup'] = c.START_DIR[:-1] + ('build.dead',)
   c.base_paths['goma_cache'] = c.base_paths['root'] + (
-      'build', 'slave', 'goma_cache')
+      'build', 'subordinate', 'goma_cache')
   for token in ('build_internal', 'build', 'depot_tools'):
     c.base_paths[token] = c.base_paths['root'] + (token,)
 

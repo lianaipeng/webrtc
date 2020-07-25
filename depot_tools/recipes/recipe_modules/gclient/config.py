@@ -83,7 +83,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     #     'https://chromium.googlesource.com/angle/angle': (
     #       'src/third_party/angle', 'HEAD')
     # then a patch to Angle project can be applied to a chromium src's
-    # checkout after first updating Angle's repo to its master's HEAD.
+    # checkout after first updating Angle's repo to its main's HEAD.
     repo_path_map = Dict(value_type=tuple, hidden=True),
 
     # Check out refs/branch-heads.
@@ -148,7 +148,7 @@ def wasm_llvm(c):
       c, 'external', 'github.com', 'WebAssembly', 'waterfall.git')
   m = c.got_revision_mapping
   m['src'] = 'got_waterfall_revision'
-  c.revisions['src'] = 'origin/master'
+  c.revisions['src'] = 'origin/main'
 
 @config_ctx()
 def emscripten_releases(c):
@@ -218,12 +218,12 @@ def build_internal(c):
   c.got_revision_mapping['build'] = 'got_build_revision'
 
 @config_ctx()
-def build_internal_scripts_slave(c):
+def build_internal_scripts_subordinate(c):
   s = c.solutions.add()
-  s.name = 'build_internal/scripts/slave'
+  s.name = 'build_internal/scripts/subordinate'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build_limited/scripts/slave.git')
-  c.got_revision_mapping['build_internal/scripts/slave'] = 'got_revision'
+           'chrome/tools/build_limited/scripts/subordinate.git')
+  c.got_revision_mapping['build_internal/scripts/subordinate'] = 'got_revision'
   # We do not use 'includes' here, because we want build_internal to be the
   # first solution in the list as run_presubmit computes upstream revision
   # from the first solution.
@@ -231,20 +231,20 @@ def build_internal_scripts_slave(c):
   c.got_revision_mapping['build'] = 'got_build_revision'
 
 @config_ctx()
-def master_deps(c):
+def main_deps(c):
   s = c.solutions.add()
-  s.name = 'master.DEPS'
+  s.name = 'main.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build/master.DEPS.git')
-  c.got_revision_mapping['master.DEPS'] = 'got_revision'
+           'chrome/tools/build/main.DEPS.git')
+  c.got_revision_mapping['main.DEPS'] = 'got_revision'
 
 @config_ctx()
-def slave_deps(c):
+def subordinate_deps(c):
   s = c.solutions.add()
-  s.name = 'slave.DEPS'
+  s.name = 'subordinate.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build/slave.DEPS.git')
-  c.got_revision_mapping['slave.DEPS'] = 'got_revision'
+           'chrome/tools/build/subordinate.DEPS.git')
+  c.got_revision_mapping['subordinate.DEPS'] = 'got_revision'
 
 @config_ctx()
 def internal_deps(c):
@@ -317,11 +317,11 @@ def infra_internal(c):  # pragma: no cover
 @config_ctx(includes=['infra'])
 def luci_gae(c):
   # luci/gae is checked out as a part of infra.git solution at HEAD.
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'origin/main'
   # luci/gae is developed together with luci-go, which should be at HEAD.
-  c.revisions['infra/go/src/go.chromium.org/luci'] = 'origin/master'
+  c.revisions['infra/go/src/go.chromium.org/luci'] = 'origin/main'
   c.revisions['infra/go/src/go.chromium.org/gae'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('origin/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/go/src/go.chromium.org/gae'] = 'got_revision'
@@ -329,9 +329,9 @@ def luci_gae(c):
 @config_ctx(includes=['infra'])
 def luci_go(c):
   # luci-go is checked out as a part of infra.git solution at HEAD.
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'origin/main'
   c.revisions['infra/go/src/go.chromium.org/luci'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('origin/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/go/src/go.chromium.org/luci'] = 'got_revision'
@@ -340,18 +340,18 @@ def luci_go(c):
 def luci_py(c):
   # luci-py is checked out as part of infra just to have appengine
   # pre-installed, as that's what luci-py PRESUBMIT relies on.
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'origin/main'
   c.revisions['infra/luci'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('origin/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/luci'] = 'got_revision'
 
 @config_ctx(includes=['infra'])
 def recipes_py(c):
-  c.revisions['infra'] = 'origin/master'
+  c.revisions['infra'] = 'origin/main'
   c.revisions['infra/recipes-py'] = (
-      gclient_api.RevisionFallbackChain('origin/master'))
+      gclient_api.RevisionFallbackChain('origin/main'))
   m = c.got_revision_mapping
   del m['infra']
   m['infra/recipes-py'] = 'got_revision'
@@ -371,13 +371,13 @@ def catapult(c):
   c.got_revision_mapping['catapult'] = 'got_revision'
 
 @config_ctx(includes=['infra_internal'])
-def infradata_master_manager(c):
+def infradata_main_manager(c):
   soln = c.solutions.add()
-  soln.name = 'infra-data-master-manager'
+  soln.name = 'infra-data-main-manager'
   soln.url = (
       'https://chrome-internal.googlesource.com/infradata/master-manager.git')
   del c.got_revision_mapping['infra_internal']
-  c.got_revision_mapping['infra-data-master-manager'] = 'got_revision'
+  c.got_revision_mapping['infra-data-main-manager'] = 'got_revision'
 
 @config_ctx()
 def infradata_config(c):

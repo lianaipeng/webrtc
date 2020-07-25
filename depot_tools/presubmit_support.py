@@ -1212,10 +1212,10 @@ def ListRelevantPresubmitFiles(files, root):
   return results
 
 
-class GetTryMastersExecuter(object):
+class GetTryMainsExecuter(object):
   @staticmethod
   def ExecPresubmitScript(script_text, presubmit_path, project, change):
-    """Executes GetPreferredTryMasters() from a single presubmit script.
+    """Executes GetPreferredTryMains() from a single presubmit script.
 
     Args:
       script_text: The text of the presubmit script.
@@ -1223,7 +1223,7 @@ class GetTryMastersExecuter(object):
       project: Project name to pass to presubmit script for bot selection.
 
     Return:
-      A map of try masters to map of builders to set of tests.
+      A map of try mains to map of builders to set of tests.
     """
     context = {}
     try:
@@ -1233,14 +1233,14 @@ class GetTryMastersExecuter(object):
       raise PresubmitFailure('"%s" had an exception.\n%s'
                              % (presubmit_path, e))
 
-    function_name = 'GetPreferredTryMasters'
+    function_name = 'GetPreferredTryMains'
     if function_name not in context:
       return {}
-    get_preferred_try_masters = context[function_name]
-    if not len(inspect.getargspec(get_preferred_try_masters)[0]) == 2:
+    get_preferred_try_mains = context[function_name]
+    if not len(inspect.getargspec(get_preferred_try_mains)[0]) == 2:
       raise PresubmitFailure(
-          'Expected function "GetPreferredTryMasters" to take two arguments.')
-    return get_preferred_try_masters(project, change)
+          'Expected function "GetPreferredTryMains" to take two arguments.')
+    return get_preferred_try_mains(project, change)
 
 
 class GetPostUploadExecuter(object):
@@ -1275,25 +1275,25 @@ class GetPostUploadExecuter(object):
     return post_upload_hook(cl, change, OutputApi(False))
 
 
-def _MergeMasters(masters1, masters2):
-  """Merges two master maps. Merges also the tests of each builder."""
+def _MergeMains(mains1, mains2):
+  """Merges two main maps. Merges also the tests of each builder."""
   result = {}
-  for (master, builders) in itertools.chain(masters1.iteritems(),
-                                            masters2.iteritems()):
-    new_builders = result.setdefault(master, {})
+  for (main, builders) in itertools.chain(mains1.iteritems(),
+                                            mains2.iteritems()):
+    new_builders = result.setdefault(main, {})
     for (builder, tests) in builders.iteritems():
       new_builders.setdefault(builder, set([])).update(tests)
   return result
 
 
-def DoGetTryMasters(change,
+def DoGetTryMains(change,
                     changed_files,
                     repository_root,
                     default_presubmit,
                     project,
                     verbose,
                     output_stream):
-  """Get the list of try masters from the presubmit scripts.
+  """Get the list of try mains from the presubmit scripts.
 
   Args:
     changed_files: List of modified files.
@@ -1304,19 +1304,19 @@ def DoGetTryMasters(change,
     output_stream: A stream to write debug output to.
 
   Return:
-    Map of try masters to map of builders to set of tests.
+    Map of try mains to map of builders to set of tests.
   """
   presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
   if not presubmit_files and verbose:
     output_stream.write("Warning, no PRESUBMIT.py found.\n")
   results = {}
-  executer = GetTryMastersExecuter()
+  executer = GetTryMainsExecuter()
 
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
     fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
-    results = _MergeMasters(results, executer.ExecPresubmitScript(
+    results = _MergeMains(results, executer.ExecPresubmitScript(
         default_presubmit, fake_path, project, change))
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
@@ -1324,7 +1324,7 @@ def DoGetTryMasters(change,
       output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results = _MergeMasters(results, executer.ExecPresubmitScript(
+    results = _MergeMains(results, executer.ExecPresubmitScript(
         presubmit_script, filename, project, change))
 
   # Make sets to lists again for later JSON serialization.
