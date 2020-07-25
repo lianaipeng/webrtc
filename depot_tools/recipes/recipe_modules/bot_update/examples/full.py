@@ -267,7 +267,7 @@ def GenTests(api):
   )
 
   yield (
-      api.test('no_cp_checkout_master') +
+      api.test('no_cp_checkout_main') +
       ci_build(revision='') +
       api.properties(
           revisions={'got_revision': 'src'},

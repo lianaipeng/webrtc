@@ -574,7 +574,7 @@ class Mirror(object):
   def update_bootstrap(self, prune=False):
     # The folder is <git number>
     gen_number = subprocess.check_output(
-        [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
+        [self.git_exe, 'number', 'main'], cwd=self.mirror_path).strip()
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
 
     src_name = self.mirror_path

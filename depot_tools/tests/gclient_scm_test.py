@@ -139,8 +139,8 @@ mark :2
 data 4
 Bye
 
-reset refs/heads/master
-commit refs/heads/master
+reset refs/heads/main
+commit refs/heads/main
 mark :3
 author Bob <bob@example.com> 1253744361 -0700
 committer Bob <bob@example.com> 1253744361 -0700
@@ -185,7 +185,7 @@ Add C
 from :3
 M 100644 :7 c
 
-reset refs/heads/master
+reset refs/heads/main
 from :3
 """
   def Options(self, *args, **kwargs):
@@ -212,9 +212,9 @@ from :3
         cwd=path).communicate()
     Popen(['git', 'remote', 'add', '-f', 'origin', '.'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
-    Popen(['git', 'checkout', '-b', 'new', 'origin/master', '-q'], stdout=PIPE,
+    Popen(['git', 'checkout', '-b', 'new', 'origin/main', '-q'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
-    Popen(['git', 'push', 'origin', 'origin/origin:origin/master', '-q'],
+    Popen(['git', 'push', 'origin', 'origin/origin:origin/main', '-q'],
         stdout=PIPE, stderr=STDOUT, cwd=path).communicate()
     Popen(['git', 'config', '--unset', 'remote.origin.fetch'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
@@ -403,7 +403,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                       'd2e35c10ac24d6c621e14a1fcadceb533155627d')
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD^1']), rev)
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD^2']),
-                      scm._Capture(['rev-parse', 'origin/master']))
+                      scm._Capture(['rev-parse', 'origin/main']))
     sys.stdout.close()
 
   def testUpdateRebase(self):
@@ -426,7 +426,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD:']),
                       'd2e35c10ac24d6c621e14a1fcadceb533155627d')
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD^']),
-                      scm._Capture(['rev-parse', 'origin/master']))
+                      scm._Capture(['rev-parse', 'origin/main']))
     sys.stdout.close()
 
   def testUpdateReset(self):
@@ -555,7 +555,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                  'Fix the conflict and run gclient again.\n'
                  'See \'man git-rebase\' for details.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    exception = ('\n____ . at refs/remotes/origin/master\n'
+    exception = ('\n____ . at refs/remotes/origin/main\n'
                  '\tYou have unstaged changes.\n'
                  '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
@@ -688,7 +688,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
                                ).AndReturn(False)
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=no-value-for-parameter
-    gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
+    gclient_scm.GitWrapper._Clone('refs/remotes/origin/main', self.url,
                                   options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
@@ -720,12 +720,12 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=no-value-for-parameter
     gclient_scm.GitWrapper._Clone(
-        'refs/remotes/origin/master', self.url, options
+        'refs/remotes/origin/main', self.url, options
     ).AndRaise(gclient_scm.subprocess2.CalledProcessError(None, None, None,
                                                           None, None))
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_DeleteOrMove', True)
     gclient_scm.GitWrapper._DeleteOrMove(False)
-    gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
+    gclient_scm.GitWrapper._Clone('refs/remotes/origin/main', self.url,
                                   options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
@@ -792,7 +792,7 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     # indicates detached HEAD
     self.assertEquals(self.getCurrentBranch(), None)
     self.checkInStdout(
-      'Checked out refs/remotes/origin/master to a detached HEAD')
+      'Checked out refs/remotes/origin/main to a detached HEAD')
 
     rmtree(origin_root_dir)
 
@@ -1051,9 +1051,9 @@ class GerritChangesFakeRepo(fake_repos.FakeReposBase):
     #       |
     #       5 refs/changes/34/1234/1
     #       |
-    # 1--2--3--4 refs/heads/master
+    # 1--2--3--4 refs/heads/main
     #    |  |
-    #    |  11(5)--12 refs/heads/master-with-5
+    #    |  11(5)--12 refs/heads/main-with-5
     #    |
     #    7--8--9 refs/heads/feature
     #       |
@@ -1064,7 +1064,7 @@ class GerritChangesFakeRepo(fake_repos.FakeReposBase):
     self._commit_git('repo_1', {'commit 2': 'touched'})
     self._commit_git('repo_1', {'commit 3': 'touched'})
     self._commit_git('repo_1', {'commit 4': 'touched'})
-    self._create_ref('repo_1', 'refs/heads/master', 4)
+    self._create_ref('repo_1', 'refs/heads/main', 4)
 
     # Create a change on top of commit 3 that consists of two commits.
     self._commit_git('repo_1',
@@ -1091,7 +1091,7 @@ class GerritChangesFakeRepo(fake_repos.FakeReposBase):
                      base=8)
     self._create_ref('repo_1', 'refs/changes/36/1236/1', 10)
 
-    # Create a refs/heads/master-with-5 on top of commit 3 which is a branch
+    # Create a refs/heads/main-with-5 on top of commit 3 which is a branch
     # where refs/changes/34/1234/1 (commit 5) has already landed as commit 11.
     self._commit_git('repo_1',
                      # This is really commit 11, but has the changes of commit 5
@@ -1099,7 +1099,7 @@ class GerritChangesFakeRepo(fake_repos.FakeReposBase):
                       'change': '1234'},
                      base=3)
     self._commit_git('repo_1', {'commit 12': 'touched'})
-    self._create_ref('repo_1', 'refs/heads/master-with-5', 12)
+    self._create_ref('repo_1', 'refs/heads/main-with-5', 12)
 
 
 class GerritChangesTest(fake_repos.FakeReposTestBase):
@@ -1158,8 +1158,8 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.setUpMirror()
     self.testCanSyncToGerritChange()
 
-  def testAppliesPatchOnTopOfMasterByDefault(self):
-    """Test the default case, where we apply a patch on top of master."""
+  def testAppliesPatchOnTopOfMainByDefault(self):
+    """Test the default case, where we apply a patch on top of main."""
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
     file_list = []
 
@@ -1169,7 +1169,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
 
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
 
     self.assertCommits([1, 2, 3, 4, 5, 6])
@@ -1192,14 +1192,14 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
 
     # Apply the change on top of that.
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
 
     self.assertCommits([1, 5, 6])
     self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
 
   def testCheckoutOriginFeature(self):
-    """Tests that we can apply a patch on a branch other than master."""
+    """Tests that we can apply a patch on a branch other than main."""
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
     file_list = []
 
@@ -1218,7 +1218,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
 
   def testCheckoutOriginFeatureOnOldRevision(self):
     """Tests that we can apply a patch on an old checkout, on a branch other
-    than master."""
+    than main."""
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
     file_list = []
 
@@ -1233,7 +1233,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
         file_list)
 
     # We shouldn't have rebased on top of 2 (which is the merge base between
-    # remote's master branch and the change) but on top of 7 (which is the
+    # remote's main branch and the change) but on top of 7 (which is the
     # merge base between remote's feature branch and the change).
     self.assertCommits([1, 2, 7, 10])
     self.assertEqual(self.githash('repo_1', 7), self.gitrevparse(self.root_dir))
@@ -1247,10 +1247,10 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     scm.update(self.options, None, file_list)
     self.assertEqual(self.githash('repo_1', 9), self.gitrevparse(self.root_dir))
 
-    # Apply refs/changes/34/1234/1, created for remote's master branch on top of
+    # Apply refs/changes/34/1234/1, created for remote's main branch on top of
     # remote's feature branch.
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
 
     # Commits 5 and 6 are part of the patch, and commits 1, 2, 7, 8 and 9 are
@@ -1258,7 +1258,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertCommits([1, 2, 5, 6, 7, 8, 9])
     self.assertEqual(self.githash('repo_1', 9), self.gitrevparse(self.root_dir))
 
-  def testDoesntRebasePatchMaster(self):
+  def testDoesntRebasePatchMain(self):
     """Tests that we can apply a patch without rebasing it.
     """
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
@@ -1270,7 +1270,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
 
     # Apply the change on top of that.
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
 
     self.assertCommits([1, 2, 3, 5, 6])
@@ -1290,7 +1290,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
 
     # Apply the change on top of that.
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
 
     self.assertCommits([1, 2, 3, 5, 6])
@@ -1306,7 +1306,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
 
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
 
     self.assertCommits([1, 2, 3, 4, 5, 6])
@@ -1327,7 +1327,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     # patch 'refs/changes/36/1236/1' creates a patch failure.
     with self.assertRaises(subprocess2.CalledProcessError) as cm:
       scm.apply_patch_ref(
-          self.url, 'refs/changes/36/1236/1', 'refs/heads/master', self.options,
+          self.url, 'refs/changes/36/1236/1', 'refs/heads/main', self.options,
           file_list)
     self.assertEqual(cm.exception.cmd[:2], ['git', 'cherry-pick'])
     self.assertIn('error: could not apply', cm.exception.stderr)
@@ -1335,7 +1335,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     # Try to apply 'refs/changes/35/1235/1', which doesn't have a merge
     # conflict.
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
@@ -1344,7 +1344,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
     file_list = []
 
-    self.options.revision = 'refs/heads/master-with-5'
+    self.options.revision = 'refs/heads/main-with-5'
     scm.update(self.options, None, file_list)
     self.assertEqual(self.githash('repo_1', 12),
                      self.gitrevparse(self.root_dir))
@@ -1378,7 +1378,7 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     # Try to apply 'refs/changes/35/1235/1', which doesn't have a merge
     # conflict.
     scm.apply_patch_ref(
-        self.url, 'refs/changes/35/1235/1', 'refs/heads/master', self.options,
+        self.url, 'refs/changes/35/1235/1', 'refs/heads/main', self.options,
         file_list)
     self.assertCommits([1, 2, 3, 5, 6])
     self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))

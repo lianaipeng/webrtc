@@ -174,7 +174,7 @@ class GclientApi(recipe_api.RecipeApi):
       # operations.
       #
       # TODO(mmoss): To be like current official builders, this step could
-      # just delete the whole <slave_name>/build/ directory and start each
+      # just delete the whole <subordinate_name>/build/ directory and start each
       # build from scratch. That might be the least bad solution, at least
       # until we have a reliable gclient method to produce a pristine working
       # dir for git-based builds (e.g. maybe some combination of 'git

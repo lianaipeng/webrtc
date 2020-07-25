@@ -19,11 +19,11 @@ class GitFootersTest(TestCase):
   _message = """
 This is my commit message. There are many like it, but this one is mine.
 
-My commit message is my best friend. It is my life. I must master it.
+My commit message is my best friend. It is my life. I must main it.
 
 """
 
-  _position = 'refs/heads/master@{#292272}'
+  _position = 'refs/heads/main@{#292272}'
 
   _position_footer = 'Cr-Commit-Position: %s\n' % _position
 

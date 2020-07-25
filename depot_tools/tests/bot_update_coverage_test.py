@@ -172,7 +172,7 @@ class BotUpdateUnittests(unittest.TestCase):
     setattr(bot_update, 'git', fake_git)
 
     self.old_os_cwd = os.getcwd
-    setattr(os, 'getcwd', lambda: '/b/build/slave/foo/build')
+    setattr(os, 'getcwd', lambda: '/b/build/subordinate/foo/build')
 
     setattr(bot_update, 'open', self.filesystem.open)
     self.old_codecs_open = codecs.open
@@ -204,7 +204,7 @@ class BotUpdateUnittests(unittest.TestCase):
         '--revision', idx_first_revision+1)
     idx_third_revision = args.index('--revision', idx_second_revision+1)
     self.assertEquals(args[idx_first_revision+1], 'somename@unmanaged')
-    self.assertEquals(args[idx_second_revision+1], 'src@origin/master')
+    self.assertEquals(args[idx_second_revision+1], 'src@origin/main')
     self.assertEquals(args[idx_third_revision+1], 'src/v8@deadbeef')
     return self.call.records
 
@@ -246,7 +246,7 @@ class BotUpdateUnittests(unittest.TestCase):
 
   def testGitCheckoutBreaksLocks(self):
     self.overrideSetupForWindows()
-    path = '/b/build/slave/foo/build/.git'
+    path = '/b/build/subordinate/foo/build/.git'
     lockfile = 'index.lock'
     removed = []
     old_os_walk = os.walk

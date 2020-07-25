@@ -66,8 +66,8 @@ def CheckChangeOnUpload(input_api, output_api):
     return ()
 """
 
-  presubmit_trymaster = """
-def GetPreferredTryMasters(project, change):
+  presubmit_trymain = """
+def GetPreferredTryMains(project, change):
   return %s
 """
 
@@ -173,9 +173,9 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'AffectedFile', 'Change', 'CommandData', 'DoGetTryMasters',
+        'AffectedFile', 'Change', 'CommandData', 'DoGetTryMains',
         'DoPostUploadExecuter', 'DoPresubmitChecks', 'GerritAccessor',
-        'GetPostUploadExecuter', 'GetTryMastersExecuter', 'GitAffectedFile',
+        'GetPostUploadExecuter', 'GetTryMainsExecuter', 'GitAffectedFile',
         'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'OutputApi',
         'ParseFiles', 'PresubmitExecuter', 'PresubmitFailure',
         'PresubmitOutput', 'ScanSubDirs', 'SigintHandler', 'ThreadPool', 'ast',
@@ -860,11 +860,11 @@ def CheckChangeOnCommit(input_api, output_api):
         'on the file to figure out who to ask for help.\n')
     self.assertEquals(output.getvalue(), text)
 
-  def testGetTryMastersExecuter(self):
+  def testGetTryMainsExecuter(self):
     self.mox.ReplayAll()
     change = self.ExampleChange(
         extra_lines=['STORY=http://tracker.com/42', 'BUG=boo\n'])
-    executer = presubmit.GetTryMastersExecuter()
+    executer = presubmit.GetTryMainsExecuter()
     self.assertEqual({}, executer.ExecPresubmitScript('', '', '', change))
     self.assertEqual({},
         executer.ExecPresubmitScript('def foo():\n  return\n', '', '', change))
@@ -880,7 +880,7 @@ def CheckChangeOnCommit(input_api, output_api):
       self.assertEqual(
           result,
           executer.ExecPresubmitScript(
-              self.presubmit_trymaster % result, '', '', change))
+              self.presubmit_trymain % result, '', '', change))
 
   def ExampleChange(self, extra_lines=None):
     """Returns an example Change instance for tests."""
@@ -900,8 +900,8 @@ def CheckChangeOnCommit(input_api, output_api):
         patchset=0,
         author=None)
 
-  def testMergeMasters(self):
-    merge = presubmit._MergeMasters
+  def testMergeMains(self):
+    merge = presubmit._MergeMains
     self.assertEqual({}, merge({}, {}))
     self.assertEqual({'m1': {}}, merge({}, {'m1': {}}))
     self.assertEqual({'m1': {}}, merge({'m1': {}}, {}))
@@ -923,10 +923,10 @@ def CheckChangeOnCommit(input_api, output_api):
     for permutation in itertools.permutations(parts):
       self.assertEqual(expected, reduce(merge, permutation, {}))
 
-  def testDoGetTryMasters(self):
-    root_text = (self.presubmit_trymaster
+  def testDoGetTryMains(self):
+    root_text = (self.presubmit_trymain
         % '{"t1.cr": {"win": set(["defaulttests"])}}')
-    linux_text = (self.presubmit_trymaster
+    linux_text = (self.presubmit_trymain
         % ('{"t1.cr": {"linux1": set(["t1"])},'
            ' "t2.cr": {"linux2": set(["defaulttests"])}}'))
 
@@ -961,7 +961,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
     output = StringIO.StringIO()
     self.assertEqual({'t1.cr': {'win': ['defaulttests']}},
-                     presubmit.DoGetTryMasters(change, [filename],
+                     presubmit.DoGetTryMains(change, [filename],
                                                self.fake_root_dir,
                                                None, None, False, output))
     output = StringIO.StringIO()
@@ -970,7 +970,7 @@ def CheckChangeOnCommit(input_api, output_api):
       't2.cr': {'linux2': ['defaulttests']},
     }
     self.assertEqual(expected,
-                     presubmit.DoGetTryMasters(change,
+                     presubmit.DoGetTryMains(change,
                                                [filename, filename_linux],
                                                self.fake_root_dir, None, None,
                                                False, output))
